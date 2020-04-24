@@ -1,0 +1,36 @@
+image:
+  registry: 
+  repository: 
+  tag: 2.52.2-1
+
+service:
+  name: pact-broker
+  type: LoadBalancer
+  externalPort: 80
+  internalPort: 9292
+
+postgresql:
+  enabled: true
+  postgresUser: pactbroker
+  postgresPassword: pactbroker
+  postgresDatabase: pactbroker
+
+securityContext:
+    enabled: false
+
+serviceAccount:
+    enabled: false
+
+livenessProbe:
+    enabled: false
+
+readinessProbe:
+    enabled: false
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 128Mi

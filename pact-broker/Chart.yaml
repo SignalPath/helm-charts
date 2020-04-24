@@ -1,0 +1,18 @@
+apiVersion: v1
+name: pact-broker
+version: 0.1.0
+appVersion: 2.52.2
+description: Chart for Pact Broker - an application for sharing consumer driven contracts and verification results
+keywords:
+  - pact
+  - broker
+  - contract
+  - verification
+home: https://pactflow.io/
+sources:
+  - https://github.com/pact-foundation/pact_broker
+maintainers:
+  - name: SignalPath
+    email: fakeemail@signalpath.com
+  - name: fivey
+    email: fivey@signalpath.com

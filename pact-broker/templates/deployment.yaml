@@ -7,10 +7,14 @@ metadata:
     chart: {{ template "pact-broker.chart" . }}
     release: {{ .Release.Name | quote }}
     {{- if .Values.labels }}
-    {{ toYaml .Values.labels | indent 4 }}
+    {{- toYaml .Values.labels | nindent 4 }}
     {{- end }}
 spec:
-  replicas: {{ $.Values.replicaCount }}
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "pact-broker.name" . }}
+      release: {{ .Release.Name | quote }}
   template:
     metadata:
       labels:
@@ -18,24 +22,24 @@ spec:
         chart: {{ template "pact-broker.chart" . }}
         release: {{ .Release.Name | quote }}
         {{- if .Values.podLabels }}
-        {{ toYaml .Values.podLabels | indent 8 }}
+        {{- toYaml .Values.podLabels | nindent 8 }}
         {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
-      {{ toYaml .Values.podAnnotations | indent 8 }}
+      {{- toYaml .Values.podAnnotations | nindent 8 }}
       {{- end }}
     spec:
       {{- if .Values.nodeSelector }}
       nodeSelector: 
-      {{- toYaml .Values.nodeSelector | indent 8 }}
+      {{- toYaml .Values.nodeSelector | nindent 8 }}
       {{- end }}
       {{- if .Values.affinity }}
       affinity: 
-      {{- toYaml .Values.affinity | indent 8 }}
+      {{- toYaml .Values.affinity | nindent 8 }}
       {{- end }}
       {{- if .Values.tolerations }}
       tolerations: 
-      {{- toYaml .Values.tolerations | indent 8 }}
+      {{- toYaml .Values.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.terminationGracePeriodSeconds }}
       terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
@@ -48,62 +52,62 @@ spec:
       serviceAccountName: {{ default (include "postgresql.fullname" . ) .Values.serviceAccount.name }}
       {{- end }}
       containers:
-        - name: {{ template "pact-broker.name" . }}
-          image: {{ template "pact-broker.image" . }}
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          ports:
-          - containerPort: {{ .Values.service.internalPort }}
-          env:
-            - name: PACT_BROKER_DATABASE_HOST
-              value: {{ template "pact-broker.postgresql.fullname" . }}
-            - name: PACT_BROKER_DATABASE_NAME
-              value: {{ .Values.postgresql.postgresDatabase }}
-            - name: PACT_BROKER_DATABASE_USERNAME
-              value: {{ .Values.postgresql.postgresUser }}
-            - name: PACT_BROKER_DATABASE_PASSWORD
-              value: {{ .Values.postgresql.postgresPassword }}             
-            - name: PACT_BROKER_PORT 
-              value: "9292"
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: {{ $.Release.Name }}-infiniaml-awscreds
-                  key: accessKeyId
-          {{- if .Values.livenessProbe.enabled }}
-          livenessProbe:
-            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.livenessProbe.successThreshold }}
-            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
-            httpGet:
-              path: {{ .Values.livenessProbe.path }}
-              port: {{ ternary "https" "http" .Values.healthcheckHttps }}
-              {{- if .Values.healthcheckHttps }}
-              scheme: HTTPS
-              {{- end }}
-              {{- if .Values.livenessProbe.headers }}
-              httpHeaders: 
-              {{- toYaml .Values.livenessProbe.headers | indent 16 }}
-              {{- end }}
-          {{- end }}
-          {{- if .Values.readinessProbe.enabled }}
-          readinessProbe:
-            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
-            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
-            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
-            successThreshold: {{ .Values.readinessProbe.successThreshold }}
-            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-            httpGet:
-              path: {{ .Values.readinessProbe.path }}
-              port: {{ ternary "https" "http" .Values.healthcheckHttps }}
-              {{- if .Values.healthcheckHttps }}
-              scheme: HTTPS
-              {{- end }}
-              {{- if .Values.readinessProbe.headers }}
-              httpHeaders: 
-              {{- toYaml .Values.readinessProbe.headers | indent 16 }}
-              {{- end }}
-          {{- end }}
-          resources:
-          {{- toYaml .Values.resources | indent 12 }}
+      - name: {{ template "pact-broker.name" . }}
+        image: {{ template "pact-broker.image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: {{ .Values.service.internalPort }}
+        env:
+        - name: PACT_BROKER_DATABASE_HOST
+          value: {{ template "pact-broker.postgresql.fullname" . }}
+        - name: PACT_BROKER_DATABASE_NAME
+          value: {{ .Values.postgresql.postgresqlDatabase }}
+        - name: PACT_BROKER_DATABASE_USERNAME
+          value: {{ .Values.postgresql.postgresqlUsername }}
+        - name: PACT_BROKER_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ $.Release.Name }}-postgresql
+              key: "postgresql-password"
+        - name: PACT_BROKER_PORT 
+          value: "9292"
+        - name: PACT_BROKER_PUBLIC_HEARTBEAT
+          value: "true"
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe:
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          httpGet:
+            path: {{ .Values.livenessProbe.path }}
+            port: {{ ternary "https" "http" .Values.healthcheckHttps }}
+            {{- if .Values.healthcheckHttps }}
+            scheme: HTTPS
+            {{- end }}
+            {{- if .Values.livenessProbe.headers }}
+            httpHeaders: 
+            {{- toYaml .Values.livenessProbe.headers | nindent 16 }}
+            {{- end }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe:
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          httpGet:
+            path: {{ .Values.readinessProbe.path }}
+            port: {{ ternary "https" "http" .Values.healthcheckHttps }}
+            {{- if .Values.healthcheckHttps }}
+            scheme: HTTPS
+            {{- end }}
+            {{- if .Values.readinessProbe.headers }}
+            httpHeaders: 
+            {{- toYaml .Values.readinessProbe.headers | nindent 16 }}
+            {{- end }}
+        {{- end }}
+        resources:
+        {{- toYaml .Values.resources | nindent 12 }}

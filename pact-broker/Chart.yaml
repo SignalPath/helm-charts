@@ -13,6 +13,6 @@ sources:
   - https://github.com/pact-foundation/pact_broker
 maintainers:
   - name: SignalPath
-    email: fakeemail@signalpath.com
-  - name: fivey
+    email: maintainers@signalpath.com
+  - name: Franklin Ivey
     email: fivey@signalpath.com
